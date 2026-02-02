@@ -12,7 +12,7 @@ We introduce SoftMol, a unified framework for target-aware molecular generation 
 Central to this approach is the soft-fragment representation, a rule-free block formulation that enables diffusion-native modeling with tunable granularity.
 Building on this foundation, the SoftBD architecture implements the first molecular block-diffusion language model, synergizing intra-block bidirectional denoising with inter-block autoregressive conditioning.
 To ensure high-throughput sampling while simultaneously increasing structural validity, *Adaptive Confidence Decoding* is integrated, while a gated MCTS mechanism explicitly decouples binding affinity optimization from drug-likeness constraints.
-Empirically, SoftMol resolves the trade-off between generation quality and efficiency: it achieves 100% chemical validity and a 6.6x speedup, while delivering a 9.7% improvement in binding affinity and 2--3x higher diversity compared to state-of-the-art methods.
+Empirically, SoftMol resolves the trade-off between generation quality and efficiency: it achieves 100% chemical validity and a 6.6x speedup, while delivering a 9.7% improvement in binding affinity and 2-3x higher diversity compared to state-of-the-art methods.
 
 
 ![Overview](image/overview.png)
