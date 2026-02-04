@@ -187,7 +187,7 @@ bd3lm-owt-block_size1024-pretrain
 /runs
 
 ## genmol
-*.pdbqt
+# *.pdbqt
 /genmol/scripts/**/*.csv
 *.pt
 genmol/scripts/exps/lead/docking/qvina02
