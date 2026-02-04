@@ -1,0 +1,12 @@
+name: small-89M
+type: ddit
+hidden_size: 784
+cond_dim: 128
+length: 512
+n_blocks: 11
+n_heads: 8
+scale_by_sigma: True
+dropout: 0.1
+tie_word_embeddings: True
+adaln: False
+attn_backend: flash_attn

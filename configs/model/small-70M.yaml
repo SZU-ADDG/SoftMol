@@ -1,0 +1,12 @@
+name: small-70M
+type: ddit
+hidden_size: 736
+cond_dim: 128
+length: 512
+n_blocks: 10
+n_heads: 8
+scale_by_sigma: True
+dropout: 0.1
+tie_word_embeddings: True
+adaln: False
+attn_backend: flash_attn

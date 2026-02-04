@@ -1,0 +1,12 @@
+name: large
+type: ddit
+hidden_size: 1408
+cond_dim: 128
+length: 1024
+n_blocks: 25
+n_heads: 16
+scale_by_sigma: True
+dropout: 0.1
+tie_word_embeddings: True
+adaln: False
+attn_backend: flash_attn

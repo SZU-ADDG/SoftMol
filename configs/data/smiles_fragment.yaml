@@ -1,0 +1,17 @@
+train: smiles
+valid: smiles
+tokenizer_name_or_path: vocab_V2.txt
+smiles_path: data/DrugLikeSMILSE-12B-427M-filterLen72
+wrap: False
+streaming: False
+use_smiles: True
+format: smiles
+
+hydra:
+  run:
+    dir: ${hydra:runtime.cwd}/outputs/DrugLikeSMILSE-12B-427M-filterLen72/${algo.name}-${model.name}-len${model.length}-bs${block_size}
+
+checkpointing:
+  save_dir: ${hydra:run.dir}
+  resume_from_ckpt: True
+  resume_ckpt_path: ${.save_dir}/checkpoints/last.ckpt

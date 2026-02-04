@@ -1,0 +1,21 @@
+name: bd3lm
+backbone: dit  # dit / dimamba / hf_dit
+parameterization: subs  # Substitution parameterization for discrete diffusion. 
+time_conditioning: False
+T: 0  # 0 (continuous time) / 1000 
+causal_attention: False
+dropout: 0.0
+ignore_bos: True
+cross_attn: True
+var_min: True
+clip_search_delta: 0.05
+clip_search_widths: []
+fix_clipping: False
+sampler: semi_ar
+mdlm_loss_scale: False
+
+# Sync algo.data with global data to avoid duplication/inconsistency when overriding via CLI
+data:
+  tokenizer_name_or_path: ${data.tokenizer_name_or_path}
+  smiles_path: ${data.smiles_path}
+  wrap: ${data.wrap}
