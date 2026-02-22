@@ -277,10 +277,19 @@ def get_dataloaders(config, tokenizer, skip_train=False,
     if utils.fsspec_exists(abs_sp):
       smiles_path = abs_sp
       
-  assert smiles_path is not None and utils.fsspec_exists(smiles_path), \
-    f"data.use_smiles=True but valid smiles_path not found: {smiles_path}"
+  assert smiles_path is not None, "smiles_path cannot be None"
 
-  raw_datasets = datasets.load_from_disk(smiles_path)
+  if utils.fsspec_exists(smiles_path):
+    print(f"[INFO] Loading dataset from local disk: {smiles_path}")
+    raw_datasets = datasets.load_from_disk(smiles_path)
+  else:
+    print(f"[INFO] Local dataset path '{smiles_path}' not found.")
+    print(f"[INFO] Attempting to auto-download from Hugging Face Hub (SZU-ADDG/ZINC-Curated)...")
+    try:
+      raw_datasets = datasets.load_dataset("SZU-ADDG/ZINC-Curated")
+      print("[INFO] Successfully loaded dataset from Hugging Face Hub!")
+    except Exception as e:
+      raise RuntimeError(f"Failed to load dataset locally or from Hugging Face. Error: {e}")
   
   if skip_train:
     train_loader = None
