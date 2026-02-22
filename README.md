@@ -28,9 +28,13 @@ conda activate softmol
 
 ## Pre-trained Weights
 
-To reproduce the reported results, pre-trained model weights are required. You can download them from [here](https://drive.google.com/drive/folders/1q8S7afZtylmJsigtFaD-aPBE7nWRSWUQ?usp=sharing).
+## Pre-trained Weights
 
-Once obtained, please place the weight files in the `./weights` directory.
+To reproduce the reported results, pre-trained model weights are required. 
+
+Our generation scripts (`sample.py` and `run_mcts.py`) are configured to **automatically download** the required weights from our [Hugging Face Repository (SZU-ADDG/SoftMol)](https://huggingface.co/SZU-ADDG/SoftMol) upon their first run. You do not need to manually download them.
+
+Alternatively, if you are in an offline environment, you can download them manually from the link above and place the weight files in the `./weights` directory.
 
 > **Recommendation**: While we provide checkpoints for multiple model scales (55M, 74M, 89M, 116M, 624M), the results reported in the paper are primarily based on **`89M-epoch6-best.ckpt`**. We recommend using this checkpoint for standard reproduction.
 

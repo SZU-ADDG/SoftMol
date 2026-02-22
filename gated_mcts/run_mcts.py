@@ -127,6 +127,18 @@ def main_test(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = opt.device
     device = torch.device(f'cuda:{0}')
 
+    # Implement a seamless logic to automatically download from HF cloud if not present locally
+    actual_ckpt = opt.ckpt
+    if not os.path.exists(actual_ckpt):
+        try:
+            from huggingface_hub import hf_hub_download
+            print(f"[INFO] Local checkpoint '{actual_ckpt}' not found. Downloading from Hugging Face Hub...")
+            actual_ckpt = hf_hub_download(repo_id="SZU-ADDG/SoftMol", filename=actual_ckpt)
+        except ImportError:
+            print("[WARN] huggingface_hub is not installed, unable to auto-download.")
+        except Exception as e:
+            print(f"[WARN] Auto-download failed: {e}")
+
     tokenizer = SmilesTokenizer(opt.vocab)
     tokenizer.bos_token = '[BOS]'
     tokenizer.eos_token = '[EOS]'
@@ -137,7 +149,7 @@ def main_test(args):
 
     model = BD3Sampler(
         gpu=str(opt.device),
-        ckpt=str(opt.ckpt),
+        ckpt=str(actual_ckpt),
         vocab=str(opt.vocab),
         length=int(opt.length),
         block_size=int(opt.block_size),
