@@ -20,7 +20,7 @@ dataset_info:
 
 ## Dataset Description
 
-- **Repository:** [SZU-ADDG/SoftMol](https://github.com/szu-aicourse/softmol)
+- **Repository:** [SZU-ADDG/SoftMol](https://github.com/SZU-ADDG/SoftMol)
 - **Paper:** [From Tokens to Blocks: A Block-Diffusion Perspective on Molecular Generation](https://arxiv.org/abs/2601.21964)
 
 ### Dataset Summary
@@ -59,22 +59,22 @@ A typical instance in the dataset is a single SMILES string representing a targe
 The dataset was constructed by collecting molecules from [ZINC-22](https://zinc22.docking.org/) and applying a four-stage curation pipeline adapted from [NovoMolGen](https://arxiv.org/abs/2508.13408) to ensure pharmaceutical relevance and structural diversity:
 
 1. **Physicochemical Filtering:**
-   Discarded molecules with Quantitative Estimate of Drug-likeness (QED) $\leq 0.5$ or Synthetic Accessibility (SA) $\geq 5$, which correspond to poor drug-likeness or low synthetic accessibility.
+   Discarded molecules with Quantitative Estimate of Drug-likeness (QED) <= 0.5 or Synthetic Accessibility (SA) >= 5, which correspond to poor drug-likeness or low synthetic accessibility.
 
 2. **Structural Validity:**
-   Removed compounds containing undesirable elements (e.g., Si or Sn), carrying non-neutral charges, including free radicals, or exhibiting overly complex topologies (e.g., more than two bridgehead atoms, rings larger than eight members, or more than ten rotatable bonds). Molecules with Molecular Polar Surface Area (TPSA) $> 140$ or known toxic/PAINS substructures were also explicitly excluded.
+   Removed compounds containing undesirable elements (e.g., Si or Sn), carrying non-neutral charges, including free radicals, or exhibiting overly complex topologies (e.g., more than two bridgehead atoms, rings larger than eight members, or more than ten rotatable bonds). Molecules with Molecular Polar Surface Area (TPSA) > 140 or known toxic/PAINS substructures were also explicitly excluded.
 
 3. **Medicinal Chemistry Rules:**
    Imposed Lipinski’s Rule of Five, constraining:
-   - Molecular Weight (MW): $100 \leq \text{MW} \leq 500$
-   - Lipophilicity (LogP): $\text{LogP} \leq 5$
+   - Molecular Weight (MW): 100 <= MW <= 500
+   - Lipophilicity (LogP): LogP <= 5
    - Strict limitations on hydrogen bond donor and acceptor counts.
 
 4. **Diversity-Aware Stratification:**
-   To mitigate dataset bias, remaining molecules were grouped by heavy-atom count between $4$ and $49$. Within each bucket, we retained only those whose Tanimoto similarity to previously accepted molecules was strictly below $0.5$.
+   To mitigate dataset bias, remaining molecules were grouped by heavy-atom count between 4 and 49. Within each bucket, we retained only those whose Tanimoto similarity to previously accepted molecules was strictly below 0.5.
 
 5. **Sequence Length Constraint:**
-   We imposed a maximum SMILES sequence length of $L = 72$ tokens. The tokenization length is calculated specifically using our custom SMILES vocabulary ([vocab_V2.txt](https://github.com/SZU-ADDG/SoftMol/blob/main/vocab_V2.txt)). This constraint removed a negligible amount of data ($< 0.001\%$) while retaining approximately $427$ million high-quality molecules.
+   We imposed a maximum SMILES sequence length of L = 72 tokens. The tokenization length is calculated specifically using our custom SMILES vocabulary ([vocab_V2.txt](https://github.com/SZU-ADDG/SoftMol/blob/main/vocab_V2.txt)). This constraint removed a negligible amount of data (< 0.001%) while retaining approximately 427 million high-quality molecules.
 
 ## Citation
 
