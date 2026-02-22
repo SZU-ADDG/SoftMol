@@ -30,11 +30,9 @@ conda activate softmol
 
 ## Pre-trained Weights
 
-## Pre-trained Weights
-
 To reproduce the reported results, pre-trained model weights are required. 
 
-Our generation scripts (`sample.py` and `run_mcts.py`) are configured to **automatically download** the required weights from our [Hugging Face Repository (SZU-ADDG/SoftMol)](https://huggingface.co/SZU-ADDG/SoftMol) upon their first run. You do not need to manually download them.
+Our generation scripts (`sample.py` and `run_mcts.py`) are configured to **automatically download** the required weights from our [Hugging Face Repository (SZU-ADDG/SoftMol)](https://huggingface.co/SZU-ADDG/SoftMol) upon their first run.
 
 Alternatively, if you are in an offline environment, you can download them manually from the link above and place the weight files in the `./weights` directory.
 
