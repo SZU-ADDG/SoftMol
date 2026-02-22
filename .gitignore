@@ -229,3 +229,4 @@ GA_gpt_145-fragevo/FragEvo_output_softmol_demo/
 fragevo.tar.gz
 weights/
 oracle/fpscores.pkl
+dataset/

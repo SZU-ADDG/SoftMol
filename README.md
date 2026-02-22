@@ -1,8 +1,10 @@
 # From Tokens to Blocks: A Block-Diffusion Perspective on Molecular Generation
 
 <div align="center">
-<!-- ![License](https://img.shields.io/badge/License-MIT-blue.svg) -->
-<!-- ![Python](https://img.shields.io/badge/Python-3.8%2B-blue) -->
+
+[![Paper](https://img.shields.io/badge/cs.AI-arXiv%3A2601.21964-b31b1b.svg)](https://arxiv.org/abs/2601.21964)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-SoftMol-ffc107?color=ffc107&logoColor=white)](https://huggingface.co/SZU-ADDG/SoftMol)
+
 </div>
 
 This repository contains the official implementation of the paper **"From Tokens to Blocks: A Block-Diffusion Perspective on Molecular Generation"**.
@@ -28,9 +30,13 @@ conda activate softmol
 
 ## Pre-trained Weights
 
-To reproduce the reported results, pre-trained model weights are required. You can download them from [here](https://drive.google.com/drive/folders/1q8S7afZtylmJsigtFaD-aPBE7nWRSWUQ?usp=sharing).
+## Pre-trained Weights
 
-Once obtained, please place the weight files in the `./weights` directory.
+To reproduce the reported results, pre-trained model weights are required. 
+
+Our generation scripts (`sample.py` and `run_mcts.py`) are configured to **automatically download** the required weights from our [Hugging Face Repository (SZU-ADDG/SoftMol)](https://huggingface.co/SZU-ADDG/SoftMol) upon their first run. You do not need to manually download them.
+
+Alternatively, if you are in an offline environment, you can download them manually from the link above and place the weight files in the `./weights` directory.
 
 > **Recommendation**: While we provide checkpoints for multiple model scales (55M, 74M, 89M, 116M, 624M), the results reported in the paper are primarily based on **`89M-epoch6-best.ckpt`**. We recommend using this checkpoint for standard reproduction.
 
@@ -68,6 +74,7 @@ python gated_mcts/run_mcts.py
 To train a SoftBD model from scratch on your own dataset:
 
 1.  **Prepare Data**: Place your SMILES dataset in a directory (e.g., `data/SMILES`).
+    > **Note**: Our training script (`main.py`) is configured to **automatically download** the curated training dataset (`SZU-ADDG/ZINC-Curated`) from Hugging Face if the specified local dataset directory is not found.
 2.  **Run Training**: Use the following Hydra-configured command:
     > **Hardware Note**: We trained the 89M SoftBD model using **8 NVIDIA RTX 4090 GPUs**. You may need to adjust `loader.global_batch_size` and `loader.num_workers` based on your available hardware.
 
@@ -99,4 +106,17 @@ We provide comprehensive experimental data to support our findings:
 To evaluate the generated molecules against the SBDD metrics:
 ```bash
 python eval_sbdd.py
+```
+
+## Citation
+
+If you use SoftMol or the ZINC-Curated dataset in your research, please cite our paper:
+
+```bibtex
+@article{yang2026tokens,
+  title={From Tokens to Blocks: A Block-Diffusion Perspective on Molecular Generation},
+  author={Yang, Qianwei and Xu, Dong and Yang, Zhangfan and Yuan, Sisi and Zhu, Zexuan and Li, Jianqiang and Ji, Junkai},
+  journal={arXiv preprint arXiv:2601.21964},
+  year={2026}
+}
 ```

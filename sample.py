@@ -132,10 +132,23 @@ def generate(*,gpu: str,length: int,block_size: int,ckpt: str,model: str = 'smal
     torch.manual_seed(int(seed))
 
     logdir = Path(out).resolve()
+
+    # If the corresponding weight is not found locally, automatically fetch it from Hugging Face
+    actual_ckpt = ckpt
+    if not os.path.exists(actual_ckpt):
+        try:
+            from huggingface_hub import hf_hub_download
+            print(f"[INFO] Local checkpoint '{actual_ckpt}' not found. Downloading from Hugging Face Hub...")
+            actual_ckpt = hf_hub_download(repo_id="SZU-ADDG/SoftMol", filename=actual_ckpt)
+        except ImportError:
+            print("[WARN] huggingface_hub is not installed, unable to auto-download.")
+        except Exception as e:
+            print(f"[WARN] Auto-download failed: {e}")
+
     args_obj = argparse.Namespace(
         model=model, seed=seed, block_size=block_size, steps=steps,
         length=length, eval_bsz=eval_bsz, nucleus=nucleus,
-        ckpt=ckpt, vocab=vocab, prefix=prefix, next_block_only=next_block_only,
+        ckpt=actual_ckpt, vocab=vocab, prefix=prefix, next_block_only=next_block_only,
         temperature=temperature, first_hitting=first_hitting, top1=top1,
         num_samples=num_samples,
     )
