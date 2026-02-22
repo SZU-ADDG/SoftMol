@@ -12,8 +12,6 @@ datasets:
 - SZU-ADDG/ZINC-Curated
 ---
 
-# SoftMol: From Tokens to Blocks: A Block-Diffusion Perspective on Molecular Generation
-
 <div align="center">
   <img src="https://huggingface.co/SZU-ADDG/SoftMol/resolve/main/image/overview.png" width="800"/>
 </div>
@@ -21,12 +19,6 @@ datasets:
 ## Model Description
 
 **SoftMol** is a unified framework for target-aware molecular generation that systematically co-designs representation, model architecture, and search strategy. It introduces the **SoftBD (Soft-fragment Block-Diffusion)** architecture, which is the first molecular block-diffusion language model. SoftMol synergizes intra-block bidirectional denoising with inter-block autoregressive conditioning.
-
-- **Developer:** Shenzhen University Artificial Intelligence Drug Design Research Group (SZU-ADDG)
-- **Model Type:** Block-Diffusion Language Model
-- **Language(s):** English (and SMILES/Chemical representations)
-- **License:** MIT
-- **Related Paper:** *From Tokens to Blocks: A Block-Diffusion Perspective on Molecular Generation*
 
 ## Model Sources
 
