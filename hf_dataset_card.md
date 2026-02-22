@@ -10,10 +10,6 @@ tags:
 - smiles
 size_categories:
 - 100M<n<1B
-dataset_info:
-  features:
-  - name: input
-    dtype: string
 ---
 
 # Dataset Card for ZINC-Curated
