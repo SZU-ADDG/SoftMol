@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--gen_batch_size', type=int, default=64, help='Expansion batch candidates count')
     parser.add_argument('--model', type=str, default='small-89M', help='Model config name')
     parser.add_argument('--sample_num', type=int, default=1, help='Number of samples per job')
-    parser.add_argument('--protein', type=str, default='parp1', choices=['braf', 'jak2', '5ht1b', 'parp1', 'fa7'], help='Protein target for docking')
+    parser.add_argument('--protein', type=str, default='parp1', choices=['braf', 'jak2', '5ht1b', 'parp1', 'fa7', '6GL8', '1UWH'], help='Protein target for docking')
 
     # MCTSConfig related
     parser.add_argument('--value_weight', type=float, default=0.0)
