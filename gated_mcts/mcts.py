@@ -166,6 +166,7 @@ class MolecularProblemState:
                  tokenizer,
                  predictor,
                  enable_qed_sa_gate: bool = True,
+                 reward_mode: str = "docking",
                  cur_molecule=None, 
                  cur_step=0, 
                  max_steps=10,  
@@ -175,6 +176,7 @@ class MolecularProblemState:
 
         self.predictor = predictor
         self.enable_qed_sa_gate = bool(enable_qed_sa_gate)
+        self.reward_mode = str(reward_mode).lower()
         self.cur_molecule = cur_molecule
         self.model = model
         self.tokenizer = tokenizer
@@ -225,11 +227,23 @@ class MolecularProblemState:
         return rv, value
     
     def get_reward(self, smiles):
-        """Reward based solely on Vina docking score.
+        """Reward function for both docking and PMO objectives."""
+        if self.reward_mode == "pmo":
+            if smiles is None:
+                return 0.0, 0.0
+            mol = Chem.MolFromSmiles(smiles)
+            if mol is None:
+                return 0.0, 0.0
+            try:
+                result = self.predictor.predict([smiles])
+                score = float(result[0]) if len(result) > 0 else 0.0
+            except Exception:
+                return 0.0, 0.0
+            if not np.isfinite(score):
+                score = 0.0
+            return score, score
 
-        - If smiles is invalid or docking fails/returns non-negative energy, rv = -1.0, reward = -1.0.
-        - Otherwise rv = -affinity (lower energy is better, larger rv is better), reward = rv.
-        """
+        # Default: docking mode (keeps existing behavior)
         if smiles is None:
             return -1.0, -1.0
 
@@ -305,6 +319,7 @@ class MolecularProblemState:
             tokenizer=self.tokenizer,
             predictor=self.predictor,
             enable_qed_sa_gate=self.enable_qed_sa_gate,
+            reward_mode=self.reward_mode,
             cur_molecule=new_answer,
             cur_step=self.cur_step + 1,
             max_steps=self.max_steps,
@@ -350,6 +365,7 @@ class MolecularProblemState:
             tokenizer=self.tokenizer,
             predictor=self.predictor,
             enable_qed_sa_gate=self.enable_qed_sa_gate,
+            reward_mode=self.reward_mode,
             cur_molecule=answer_updated,
             cur_step=self.cur_step + n_steps,
             max_steps=1000, 
@@ -793,6 +809,28 @@ class MCTS:
     def get_trace_meta(self):
         return dict(self._trace_meta)
 
+    def _predictor_finished(self):
+        predictor = None
+        if self.root is not None and hasattr(self.root, "state"):
+            predictor = getattr(self.root.state, "predictor", None)
+        elif self.initial_state is not None:
+            predictor = getattr(self.initial_state, "predictor", None)
+        if predictor is None:
+            return False
+        return bool(getattr(predictor, "finish", False))
+
+    def _predictor_calls(self):
+        predictor = None
+        if self.root is not None and hasattr(self.root, "state"):
+            predictor = getattr(self.root.state, "predictor", None)
+        elif self.initial_state is not None:
+            predictor = getattr(self.initial_state, "predictor", None)
+        if predictor is None:
+            return None
+        if hasattr(predictor, "n_calls"):
+            return int(getattr(predictor, "n_calls"))
+        return None
+
     def run_mcts(self):
         if self.root is None:
             self.root = MonteCarloTreeSearchNode(state=self.initial_state,
@@ -823,6 +861,13 @@ class MCTS:
         }
 
         while search_iter < self.config.search_time or n_terminals < self.config.min_terminals:
+            if self._predictor_finished():
+                self._log_event({
+                    "iter": int(search_iter),
+                    "type": "stop_budget",
+                    "oracle_calls": self._predictor_calls(),
+                })
+                break
             search_iter += 1
             pbar.update(1)
             v, is_expand = self.root._tree_policy()  # Selection & Expansion
