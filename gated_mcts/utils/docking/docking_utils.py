@@ -32,6 +32,12 @@ class DockingVina(object):
         elif target == 'braf':
             self.box_center = (84.194, 6.949, -7.081)
             self.box_size = (22.032, 19.211, 14.106)
+        elif target == '6GL8':
+            self.box_center = (16.9, 2.8, 15.7)
+            self.box_size = (24.2, 21.6, 24.4)
+        elif target == '1UWH':
+            self.box_center = (74.2, 43.8, 65.7)
+            self.box_size = (20.6, 25.3, 22.0)
 
         self.protein = target
         self.vina_program = os.path.join(base_dir, 'qvina02')

@@ -230,3 +230,4 @@ fragevo.tar.gz
 weights/
 oracle/fpscores.pkl
 dataset/
+results/pmo/
