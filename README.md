@@ -24,7 +24,7 @@ Empirically, SoftMol resolves the trade-off between generation quality and effic
 To set up the environment, please use the provided YAML file to create a Conda environment with all necessary dependencies.
 
 ```bash
-conda env create -f environment.yml
+conda env create -f environment.yml --solver libmamba -y
 conda activate softmol
 ```
 
