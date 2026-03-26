@@ -233,3 +233,6 @@ dataset/
 results/pmo/
 mcts_output
 tool/train_sample_10m.smi
+tool/zinc250k.csv
+.gitignore
+tool/valid_idx_zinc250k.json
