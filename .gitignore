@@ -231,3 +231,5 @@ weights/
 oracle/fpscores.pkl
 dataset/
 results/pmo/
+mcts_output
+tool/train_sample_10m.smi
