@@ -166,6 +166,7 @@ class MolecularProblemState:
                  tokenizer,
                  predictor,
                  enable_qed_sa_gate: bool = True,
+                 use_geam_score: bool = False,
                  reward_mode: str = "docking",
                  cur_molecule=None, 
                  cur_step=0, 
@@ -176,6 +177,7 @@ class MolecularProblemState:
 
         self.predictor = predictor
         self.enable_qed_sa_gate = bool(enable_qed_sa_gate)
+        self.use_geam_score = bool(use_geam_score)
         self.reward_mode = str(reward_mode).lower()
         self.cur_molecule = cur_molecule
         self.model = model
@@ -244,6 +246,38 @@ class MolecularProblemState:
             return score, score
 
         # Default: docking mode (keeps existing behavior)
+        if self.use_geam_score:
+            if smiles is None:
+                return 0.0, 0.0
+
+            mol = Chem.MolFromSmiles(smiles)
+            if mol is None:
+                return 0.0, 0.0
+
+            try:
+                from rdkit.Chem import QED
+                from gated_mcts.utils import sascorer as _sascorer
+
+                qed = float(QED.qed(mol))
+                sa_raw = float(_sascorer.calculateScore(mol))
+                sa_norm = (10.0 - sa_raw) / 9.0
+
+                result = self.predictor.predict([smiles])
+                affinity = float(result[0]) if len(result) > 0 else np.nan
+
+                if (not np.isfinite(affinity)) or (not np.isfinite(qed)) or (not np.isfinite(sa_norm)):
+                    return 0.0, 0.0
+
+                ds_norm = float(np.clip(-affinity, 0.0, 20.0) / 20.0)
+                score = float(ds_norm * qed * sa_norm)
+                if not np.isfinite(score):
+                    return 0.0, 0.0
+                score = float(np.clip(score, 0.0, 1.0))
+                return score, score
+            except Exception:
+                return 0.0, 0.0
+
+        # Legacy docking mode (fully preserved): QED/SA gate + docking-only reward
         if smiles is None:
             return -1.0, -1.0
 
@@ -319,6 +353,7 @@ class MolecularProblemState:
             tokenizer=self.tokenizer,
             predictor=self.predictor,
             enable_qed_sa_gate=self.enable_qed_sa_gate,
+            use_geam_score=self.use_geam_score,
             reward_mode=self.reward_mode,
             cur_molecule=new_answer,
             cur_step=self.cur_step + 1,
@@ -365,6 +400,7 @@ class MolecularProblemState:
             tokenizer=self.tokenizer,
             predictor=self.predictor,
             enable_qed_sa_gate=self.enable_qed_sa_gate,
+            use_geam_score=self.use_geam_score,
             reward_mode=self.reward_mode,
             cur_molecule=answer_updated,
             cur_step=self.cur_step + n_steps,

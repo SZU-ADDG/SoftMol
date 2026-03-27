@@ -78,6 +78,7 @@ def Test(model, tokenizer, device, output_file_path, sample_num, output_file_nam
             tokenizer=tokenizer,
             predictor=predictor,
             enable_qed_sa_gate=not bool(opt.disable_qed_sa_gate),
+            use_geam_score=bool(opt.use_geam_score),
             cur_molecule=x,
             max_steps=int(max_steps_blocks),
         )
@@ -209,6 +210,7 @@ if __name__ == '__main__':
     parser.add_argument('--diversity_threshold', type=float, default=0.6, help='[Compatibility] Historical similarity threshold, currently only used to filter "siblings don not repeat"')
     parser.add_argument('--max_resample_on_empty', type=int, default=5, help='Max resampling limit when candidate pool is empty')
     parser.add_argument('--disable_qed_sa_gate', action='store_true', help='QED/SA gate is enabled by default; pass this parameter to disable it (integration occurs only when QED > 0.5 and SA_raw < 5.0).')
+    parser.add_argument('--use_geam_score', action='store_true', help='Use GEAM-style score: clip(-affinity,0,20)/20 * QED * ((10-SA_raw)/9). Disabled by default; when enabled, hard QED/SA gate is bypassed.')
     parser.add_argument('--trace_path', type=str, default=None, help='Search trace save path (directory or filename base, no index; unified to CSV)')
 
     opt = parser.parse_args()

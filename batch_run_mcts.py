@@ -58,6 +58,7 @@ def parse_args():
     parser.add_argument('--diversity_threshold', type=float, default=0.6)
     parser.add_argument('--max_resample_on_empty', type=int, default=5)
     parser.add_argument('--disable_qed_sa_gate', action='store_true', help='QED/SA gate is enabled by default; pass this parameter to disable it (integration occurs only when QED > 0.5 and SA_raw < 5.0).')
+    parser.add_argument('--use_geam_score', action='store_true', help='Use GEAM-style score: clip(-affinity,0,20)/20 * QED * ((10-SA_raw)/9). Disabled by default; when enabled, hard QED/SA gate is bypassed.')
     parser.add_argument('--trace_path', type=str, default=None, help='Search trace save path (directory or filename base, no index; consistently written as CSV)')
     return parser.parse_args()
 
@@ -106,6 +107,8 @@ def main():
     ]
     if args.disable_qed_sa_gate:
         base_cmd.append('--disable_qed_sa_gate')
+    if args.use_geam_score:
+        base_cmd.append('--use_geam_score')
 
     if args.trace_path is not None and len(str(args.trace_path)) > 0:
         base_cmd += [
