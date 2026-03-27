@@ -190,7 +190,7 @@ if __name__ == '__main__':
     parser.add_argument('--temperature', type=float, default=1.1, help='Sampling temperature')
     parser.add_argument('--gen_batch_size', type=int, default=64, help='Expansion batch candidates')
     parser.add_argument('--model', type=str, default='small-89M', help='Model config name (corresponds to configs/model/<name>.yaml)')
-    parser.add_argument('--protein', type=str, default='parp1', choices=['braf', 'jak2', '5ht1b', 'parp1', 'fa7', '6GL8', '1UWH'], help='Protein target for docking')
+    parser.add_argument('--protein', type=str, default='parp1', choices=['fa7', 'parp1', '5ht1b', 'jak2', 'braf', '6GL8', '1UWH', '7OTE', '1KKQ', '5WFD', '7WC7', '8JJL', '7D42', '7S1S', '6AZV'], help='Protein target for docking')
 
     # MCTSConfig related
     parser.add_argument('--value_weight', type=float, default=0.0, help='Weight of value in total reward')

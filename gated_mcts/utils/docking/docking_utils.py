@@ -10,6 +10,71 @@ import subprocess
 from openbabel import pybel
 import tempfile
 
+TARGET_BOXES = {
+    'fa7': {
+        'center': (10.131, 41.879, 32.097),
+        'size': (20.673, 20.198, 21.362),
+    },
+    'parp1': {
+        'center': (26.413, 11.282, 27.238),
+        'size': (18.521, 17.479, 19.995),
+    },
+    '5ht1b': {
+        'center': (-26.602, 5.277, 17.898),
+        'size': (22.5, 22.5, 22.5),
+    },
+    'jak2': {
+        'center': (114.758, 65.496, 11.345),
+        'size': (19.033, 17.929, 20.283),
+    },
+    'braf': {
+        'center': (84.194, 6.949, -7.081),
+        'size': (22.032, 19.211, 14.106),
+    },
+    '6GL8': {
+        'center': (16.9, 2.8, 15.7),
+        'size': (24.2, 21.6, 24.4),
+    },
+    '1UWH': {
+        'center': (74.2, 43.8, 65.7),
+        'size': (20.6, 25.3, 22.0),
+    },
+    '7OTE': {
+        'center': (1.2, 8.9, -1.4),
+        'size': (30.3, 18.3, 22.9),
+    },
+    '1KKQ': {
+        'center': (74.3, 26.4, 23.8),
+        'size': (24.8, 23.0, 22.0),
+    },
+    '5WFD': {
+        'center': (24.5, -1.0, -22.7),
+        'size': (19.6, 23.7, 26.2),
+    },
+    '7WC7': {
+        'center': (-26.7, -11.3, 143.2),
+        'size': (19.7, 20.0, 19.7),
+    },
+    '8JJL': {
+        'center': (123.9, 117.4, 91.6),
+        'size': (17.2, 24.1, 18.4),
+    },
+    '7D42': {
+        'center': (18.7, -13.4, -39.8),
+        'size': (22.3, 22.2, 22.7),
+    },
+    '7S1S': {
+        'center': (-28.7, -47.2, -9.0),
+        'size': (20.3, 22.7, 17.0),
+    },
+    '6AZV': {
+        'center': (29.9, 23.3, -17.0),
+        'size': (22.8, 17.9, 20.9),
+    },
+}
+
+SUPPORTED_TARGETS = tuple(TARGET_BOXES.keys())
+
 
 class DockingVina(object):
     def __init__(self, target):
@@ -17,31 +82,19 @@ class DockingVina(object):
         # Uniformly use absolute path relative to this file to avoid missing resources/executables due to working directory changes
         base_dir = os.path.dirname(os.path.abspath(__file__))
         self.base_dir = base_dir
-        if target == 'fa7':
-            self.box_center = (10.131, 41.879, 32.097)
-            self.box_size = (20.673, 20.198, 21.362)
-        elif target == 'parp1':
-            self.box_center = (26.413, 11.282, 27.238)
-            self.box_size = (18.521, 17.479, 19.995)
-        elif target == '5ht1b':
-            self.box_center = (-26.602, 5.277, 17.898)
-            self.box_size = (22.5, 22.5, 22.5)
-        elif target == 'jak2':
-            self.box_center = (114.758, 65.496, 11.345)
-            self.box_size = (19.033, 17.929, 20.283)
-        elif target == 'braf':
-            self.box_center = (84.194, 6.949, -7.081)
-            self.box_size = (22.032, 19.211, 14.106)
-        elif target == '6GL8':
-            self.box_center = (16.9, 2.8, 15.7)
-            self.box_size = (24.2, 21.6, 24.4)
-        elif target == '1UWH':
-            self.box_center = (74.2, 43.8, 65.7)
-            self.box_size = (20.6, 25.3, 22.0)
+        if target not in TARGET_BOXES:
+            supported = ", ".join(sorted(SUPPORTED_TARGETS))
+            raise ValueError(f'Unsupported target: {target}. Available targets: {supported}')
+
+        target_box = TARGET_BOXES[target]
+        self.box_center = target_box['center']
+        self.box_size = target_box['size']
 
         self.protein = target
         self.vina_program = os.path.join(base_dir, 'qvina02')
         self.receptor_file = os.path.join(base_dir, f'{target}.pdbqt')
+        if not os.path.exists(self.receptor_file):
+            raise FileNotFoundError(f'Receptor file not found: {self.receptor_file}')
         self.exhaustiveness = 1
         self.num_sub_proc = 1
         self.num_cpu_dock = 5
