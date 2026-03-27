@@ -206,7 +206,7 @@ def main() -> int:
     parser.add_argument("-c", "--ckpt", type=str, default="weights/89M-epoch6-best.ckpt", help="Path to .ckpt")
     parser.add_argument("-m", "--model", type=str, default="small-89M")
     parser.add_argument("-T", "--steps", type=int, default=300)
-    parser.add_argument("-p", "--nucleus", type=float, default=0.95)
+    parser.add_argument("-p", "--nucleus", type=float, default=0.8, help="Nucleus sampling p-value (default 0.8)")
     parser.add_argument("-e", "--eval-bsz", type=int, default=1000, help="Evaluation batch size, number of samples per batch")
     parser.add_argument("-n", "--num-samples", type=int, default=None,
                         help="Total samples to generate (default controlled by -e, 1 batch only)")
