@@ -99,6 +99,28 @@ def _save_topk_csv(path: Path, predictor: PMOOracleAdapter, k: int) -> None:
             writer.writerow([rank, int(rec.call_idx), rec.smiles, float(rec.score)])
 
 
+def _save_standard_topk_outputs(output_dir: Path, prefix: str, predictor: PMOOracleAdapter, custom_k: int) -> dict:
+    top10_path = output_dir / f"{prefix}_top10.csv"
+    top100_path = output_dir / f"{prefix}_top100.csv"
+    _save_topk_csv(top10_path, predictor, 10)
+    _save_topk_csv(top100_path, predictor, 100)
+
+    custom_k = int(custom_k)
+    if custom_k == 10:
+        topk_path = top10_path
+    elif custom_k == 100:
+        topk_path = top100_path
+    else:
+        topk_path = output_dir / f"{prefix}_top{custom_k}.csv"
+        _save_topk_csv(topk_path, predictor, custom_k)
+
+    return {
+        "top10_path": top10_path,
+        "top100_path": top100_path,
+        "topk_path": topk_path,
+    }
+
+
 def _run_single(args) -> dict:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.device)
     device = torch.device("cuda:0")
@@ -174,11 +196,18 @@ def _run_single(args) -> dict:
     prefix = f"{args.oracle_name}_seed{args.seed}"
 
     history_path = output_dir / f"{prefix}_history.csv"
-    topk_path = output_dir / f"{prefix}_top{int(args.save_topk)}.csv"
     metrics_path = output_dir / f"{prefix}_metrics.json"
 
     _save_history_csv(history_path, predictor)
-    _save_topk_csv(topk_path, predictor, int(args.save_topk))
+    topk_outputs = _save_standard_topk_outputs(
+        output_dir=output_dir,
+        prefix=prefix,
+        predictor=predictor,
+        custom_k=int(args.save_topk),
+    )
+    top10_path = topk_outputs["top10_path"]
+    top100_path = topk_outputs["top100_path"]
+    topk_path = topk_outputs["topk_path"]
 
     metrics = compute_pmo_metrics(
         predictor.buffer,
@@ -196,6 +225,8 @@ def _run_single(args) -> dict:
             "best_smi": smi,
             "best_sentence": cur_sentence,
             "history_file": history_path.name,
+            "top10_file": top10_path.name,
+            "top100_file": top100_path.name,
             "topk_file": topk_path.name,
         }
     )
@@ -210,6 +241,8 @@ def _run_single(args) -> dict:
 
     return {
         "history_path": str(history_path),
+        "top10_path": str(top10_path),
+        "top100_path": str(top100_path),
         "topk_path": str(topk_path),
         "metrics_path": str(metrics_path),
         "metrics": metrics,
@@ -266,6 +299,8 @@ def main():
     args = _parse_args()
     result = _run_single(args)
     print(f"[PMO] history: {result['history_path']}")
+    print(f"[PMO] top10: {result['top10_path']}")
+    print(f"[PMO] top100: {result['top100_path']}")
     print(f"[PMO] topk: {result['topk_path']}")
     print(f"[PMO] metrics: {result['metrics_path']}")
     print(
