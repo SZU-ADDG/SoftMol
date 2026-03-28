@@ -65,8 +65,10 @@ def _compute_from_metrics(metrics_path: Path) -> tuple[dict, int, int]:
     metrics_budget = {
         "auc_top1": float(data.get("auc_top1", 0.0)),
         "auc_top10": float(data.get("auc_top10", 0.0)),
+        "auc_top100": float(data.get("auc_top100", 0.0)),
         "top1": float(data.get("top1", 0.0)),
         "top10": float(data.get("top10", 0.0)),
+        "top100": float(data.get("top100", 0.0)),
     }
     return metrics_budget, n_calls, n_calls
 
@@ -138,8 +140,10 @@ def main() -> None:
                 "seed": int(args.seed),
                 "auc_top1": float(metrics_budget["auc_top1"]),
                 "auc_top10": float(metrics_budget["auc_top10"]),
+                "auc_top100": float(metrics_budget["auc_top100"]),
                 "final_top1": float(metrics_budget["top1"]),
                 "final_top10": float(metrics_budget["top10"]),
+                "final_top100": float(metrics_budget["top100"]),
                 "n_molecules_total": int(n_total),
                 "n_molecules_budget": int(n_budget),
                 # Keep these names for schema-compatibility with genmol eval_batch.py.
@@ -171,8 +175,10 @@ def main() -> None:
                 "seed",
                 "auc_top1",
                 "auc_top10",
+                "auc_top100",
                 "final_top1",
                 "final_top10",
+                "final_top100",
                 "n_molecules_total",
                 "n_molecules_budget",
                 "yaml_file",
@@ -206,20 +212,26 @@ def main() -> None:
 
     sum_auc_top1 = float(sum(item["auc_top1"] for item in rows))
     sum_auc_top10 = float(sum(item["auc_top10"] for item in rows))
+    sum_auc_top100 = float(sum(item["auc_top100"] for item in rows))
     sum_final_top1 = float(sum(item["final_top1"] for item in rows))
     sum_final_top10 = float(sum(item["final_top10"] for item in rows))
+    sum_final_top100 = float(sum(item["final_top100"] for item in rows))
     n_tasks = int(len(rows))
     summary_row = {
         "seed": int(args.seed),
         "n_tasks": n_tasks,
         "sum_auc_top1": sum_auc_top1,
         "sum_auc_top10": sum_auc_top10,
+        "sum_auc_top100": sum_auc_top100,
         "sum_final_top1": sum_final_top1,
         "sum_final_top10": sum_final_top10,
+        "sum_final_top100": sum_final_top100,
         "mean_auc_top1": float(sum_auc_top1 / n_tasks),
         "mean_auc_top10": float(sum_auc_top10 / n_tasks),
+        "mean_auc_top100": float(sum_auc_top100 / n_tasks),
         "mean_final_top1": float(sum_final_top1 / n_tasks),
         "mean_final_top10": float(sum_final_top10 / n_tasks),
+        "mean_final_top100": float(sum_final_top100 / n_tasks),
         "max_oracle_calls": int(args.max_oracle_calls),
         "freq_log": int(args.freq_log),
         "missing_tasks": int(len(missing)),
@@ -238,8 +250,10 @@ def main() -> None:
         f"n_tasks={n_tasks} | "
         f"sum_auc_top1={sum_auc_top1:.6f} | "
         f"sum_auc_top10={sum_auc_top10:.6f} | "
+        f"sum_auc_top100={sum_auc_top100:.6f} | "
         f"sum_final_top1={sum_final_top1:.6f} | "
-        f"sum_final_top10={sum_final_top10:.6f}"
+        f"sum_final_top10={sum_final_top10:.6f} | "
+        f"sum_final_top100={sum_final_top100:.6f}"
     )
     if missing:
         print(f"Skipped {len(missing)} missing task(s): {missing}")

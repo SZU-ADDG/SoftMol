@@ -10,6 +10,7 @@ Options:
   --output-dir <dir>         Output directory (default: results/pmo/softmol_mcts_seed42_20260327)
   --seed <int>               Seed (default: 42)
   --gpus <csv>               GPU ids, comma-separated (default: 0,1,2,3,4,5,6,7)
+  --procs-per-gpu <int>      Concurrent processes per GPU (default: 1)
   --conda-env <name>         Conda env name (default: softmol)
   --max-oracle-calls <int>   Max oracle calls (default: 10000)
   --freq-log <int>           AUC logging frequency (default: 100)
@@ -40,7 +41,7 @@ Options:
 
 Notes:
   - 23 PMO tasks, single seed.
-  - One process per GPU, wave scheduling.
+  - Wave scheduling with total concurrency = (#GPUs * --procs-per-gpu).
   - First-round log file: <oracle>_seed<seed>.log
   - Retry-round log file: <oracle>_seed<seed>_retry1.log
 USAGE
@@ -52,6 +53,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 OUTPUT_DIR="results/pmo/softmol_mcts_seed42_20260327"
 SEED=42
 GPU_IDS="0,1,2,3,4,5,6,7"
+PROCS_PER_GPU=1
 CONDA_ENV="softmol"
 MAX_ORACLE_CALLS=10000
 FREQ_LOG=100
@@ -96,6 +98,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --gpus)
       GPU_IDS="$2"
+      shift 2
+      ;;
+    --procs-per-gpu)
+      PROCS_PER_GPU="$2"
       shift 2
       ;;
     --conda-env)
@@ -230,6 +236,18 @@ if [[ ${#GPU_ARR[@]} -eq 0 ]]; then
   exit 1
 fi
 
+if ! [[ "$PROCS_PER_GPU" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[ERROR] --procs-per-gpu must be a positive integer, got: $PROCS_PER_GPU" >&2
+  exit 1
+fi
+
+SLOT_GPU_ARR=()
+for gpu in "${GPU_ARR[@]}"; do
+  for ((slot_i=0; slot_i<PROCS_PER_GPU; slot_i++)); do
+    SLOT_GPU_ARR+=("$gpu")
+  done
+done
+
 ORACLES=(
   albuterol_similarity
   amlodipine_mpo
@@ -271,23 +289,23 @@ run_one_round() {
   shift 2
   local jobs=("$@")
 
-  local num_gpus=${#GPU_ARR[@]}
+  local num_slots=${#SLOT_GPU_ARR[@]}
   local wave_count=0
 
-  for ((i=0; i<${#jobs[@]}; i+=num_gpus)); do
+  for ((i=0; i<${#jobs[@]}; i+=num_slots)); do
     wave_count=$((wave_count + 1))
     pids=()
     orcs=()
     gpus=()
 
-    for ((j=0; j<num_gpus; j++)); do
+    for ((j=0; j<num_slots; j++)); do
       idx=$((i + j))
       if [[ $idx -ge ${#jobs[@]} ]]; then
         break
       fi
 
       oracle="${jobs[$idx]}"
-      gpu="${GPU_ARR[$j]}"
+      gpu="${SLOT_GPU_ARR[$j]}"
 
       if [[ "$round_name" == "round1" ]]; then
         log_path="$LOG_DIR/${oracle}_seed${SEED}.log"
@@ -368,6 +386,8 @@ echo "[INFO] Project root: $PROJECT_ROOT"
 echo "[INFO] Output dir:   $OUTPUT_DIR"
 echo "[INFO] Seed:         $SEED"
 echo "[INFO] GPUs:         ${GPU_ARR[*]}"
+echo "[INFO] Procs/GPU:    $PROCS_PER_GPU"
+echo "[INFO] Max parallel: ${#SLOT_GPU_ARR[@]}"
 echo "[INFO] Oracle count: ${#ORACLES[@]}"
 echo "[INFO] Save top-k:   $SAVE_TOPK (plus always top10/top100)"
 echo "[INFO] Model ckpt:   $CKPT"
