@@ -63,7 +63,9 @@ def _compute_from_metrics(metrics_path: Path) -> tuple[dict, int, int]:
         data = json.load(handle)
     n_calls = int(data.get("n_calls", 0))
     metrics_budget = {
+        "auc_top1": float(data.get("auc_top1", 0.0)),
         "auc_top10": float(data.get("auc_top10", 0.0)),
+        "top1": float(data.get("top1", 0.0)),
         "top10": float(data.get("top10", 0.0)),
     }
     return metrics_budget, n_calls, n_calls
@@ -80,6 +82,7 @@ def main() -> None:
     parser.add_argument("--freq_log", type=int, default=100)
     parser.add_argument("--output_metrics_csv", type=str, default=None)
     parser.add_argument("--output_summary_csv", type=str, default=None)
+    parser.add_argument("--output_top1_csv", type=str, default=None)
     parser.add_argument("--skip_missing", action="store_true")
     args = parser.parse_args()
 
@@ -96,6 +99,11 @@ def main() -> None:
         _resolve_path(args.output_summary_csv)
         if args.output_summary_csv is not None
         else input_dir / f"pmo_summary_seed{int(args.seed)}.csv"
+    )
+    output_top1_csv = (
+        _resolve_path(args.output_top1_csv)
+        if args.output_top1_csv is not None
+        else input_dir / f"pmo_top1_seed{int(args.seed)}.csv"
     )
 
     rows: list[dict] = []
@@ -128,7 +136,9 @@ def main() -> None:
             {
                 "oracle": oracle,
                 "seed": int(args.seed),
+                "auc_top1": float(metrics_budget["auc_top1"]),
                 "auc_top10": float(metrics_budget["auc_top10"]),
+                "final_top1": float(metrics_budget["top1"]),
                 "final_top10": float(metrics_budget["top10"]),
                 "n_molecules_total": int(n_total),
                 "n_molecules_budget": int(n_budget),
@@ -159,7 +169,9 @@ def main() -> None:
             fieldnames=[
                 "oracle",
                 "seed",
+                "auc_top1",
                 "auc_top10",
+                "final_top1",
                 "final_top10",
                 "n_molecules_total",
                 "n_molecules_budget",
@@ -175,15 +187,38 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(rows)
 
+    output_top1_csv.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_top1_csv, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["oracle", "seed", "auc_top1", "final_top1"],
+        )
+        writer.writeheader()
+        writer.writerows(
+            {
+                "oracle": item["oracle"],
+                "seed": item["seed"],
+                "auc_top1": item["auc_top1"],
+                "final_top1": item["final_top1"],
+            }
+            for item in rows
+        )
+
+    sum_auc_top1 = float(sum(item["auc_top1"] for item in rows))
     sum_auc_top10 = float(sum(item["auc_top10"] for item in rows))
+    sum_final_top1 = float(sum(item["final_top1"] for item in rows))
     sum_final_top10 = float(sum(item["final_top10"] for item in rows))
     n_tasks = int(len(rows))
     summary_row = {
         "seed": int(args.seed),
         "n_tasks": n_tasks,
+        "sum_auc_top1": sum_auc_top1,
         "sum_auc_top10": sum_auc_top10,
+        "sum_final_top1": sum_final_top1,
         "sum_final_top10": sum_final_top10,
+        "mean_auc_top1": float(sum_auc_top1 / n_tasks),
         "mean_auc_top10": float(sum_auc_top10 / n_tasks),
+        "mean_final_top1": float(sum_final_top1 / n_tasks),
         "mean_final_top10": float(sum_final_top10 / n_tasks),
         "max_oracle_calls": int(args.max_oracle_calls),
         "freq_log": int(args.freq_log),
@@ -198,9 +233,12 @@ def main() -> None:
 
     print(f"Wrote per-task metrics to: {output_metrics_csv}")
     print(f"Wrote summary metrics to: {output_summary_csv}")
+    print(f"Wrote top1 metrics to: {output_top1_csv}")
     print(
         f"n_tasks={n_tasks} | "
+        f"sum_auc_top1={sum_auc_top1:.6f} | "
         f"sum_auc_top10={sum_auc_top10:.6f} | "
+        f"sum_final_top1={sum_final_top1:.6f} | "
         f"sum_final_top10={sum_final_top10:.6f}"
     )
     if missing:
