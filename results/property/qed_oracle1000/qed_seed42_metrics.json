@@ -1,0 +1,21 @@
+{
+  "n_calls": 1000,
+  "top1": 0.9437237838221947,
+  "top10": 0.9331054715855096,
+  "top100": 0.9010682838636832,
+  "auc_top1": 0.8947933715283337,
+  "auc_top10": 0.879933579413073,
+  "auc_top100": 0.8111891602187579,
+  "oracle_name": "qed",
+  "seed": 42,
+  "max_oracle_calls": 1000,
+  "freq_log": 100,
+  "elapsed_time_sec": 399.1567413806915,
+  "best_rv": 0.9437237838221947,
+  "best_smi": "CCn1cc(C(=O)NC2CCC(c3cccc(F)c3)C2)nn1",
+  "best_sentence": "[BOS]CCn1cc(C(=O)N[C@@H]2CC[C@@H](c3cccc(F)c3)C2)nn1[EOS][EOS]",
+  "history_file": "qed_seed42_history.csv",
+  "top10_file": "qed_seed42_top10.csv",
+  "top100_file": "qed_seed42_top100.csv",
+  "topk_file": "qed_seed42_top100.csv"
+}
