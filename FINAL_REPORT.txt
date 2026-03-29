@@ -1,0 +1,111 @@
+超参数优化实验总结报告
+========================
+日期: 2026-03-29
+Baseline: sum_final_top1 = 10.176196
+
+已完成实验结果（按分数排序）
+============================
+
+🥇 第1名: exp02-smaller-block
+分数: 11.442557
+提升: +1.266 (+12.4%)
+参数:
+  - block_size: 6 (baseline: 8)
+  - init_children: 20
+  - n_total_children: 10 (baseline: 8)
+  - nucleus: 1.0
+  - temperature: 1.0
+  - c_param: 2.1
+关键发现: 更小的block_size提供更精细的搜索粒度
+
+🥈 第2名: exp04-combined
+分数: 11.230185
+提升: +1.054 (+10.4%)
+参数:
+  - block_size: 7
+  - init_children: 25
+  - n_total_children: 10
+  - c_param: 2.5
+  - width_increase_factor: 2
+关键发现: 组合优化策略有效
+
+🥉 第3名: exp07-block6-wider
+分数: 10.448849
+提升: +0.273 (+2.7%)
+参数:
+  - block_size: 6
+  - init_children: 30
+  - n_total_children: 12
+  - c_param: 2.1
+
+第4名: exp01-wider-search
+分数: 10.346135
+提升: +0.170 (+1.7%)
+参数:
+  - block_size: 8
+  - init_children: 30
+  - n_total_children: 12
+
+第5名: exp03-more-exploration
+分数: 10.313713
+提升: +0.138 (+1.4%)
+参数:
+  - block_size: 8
+  - c_param: 3.0
+  - width_increase_factor: 3
+
+第6名: exp06-larger-block
+分数: 7.614785
+提升: -2.561 (-25.2%)
+参数:
+  - block_size: 10
+  - 仅完成17/23任务
+关键发现: 更大的block_size效果差
+
+第7名: exp05-small-block-wide
+分数: 5.903914
+提升: -4.272 (-42.0%)
+参数:
+  - block_size: 5
+  - init_children: 25
+  - n_total_children: 12
+  - 仅完成15/23任务
+关键发现: block_size=5太小，导致任务失败
+
+未完成实验
+==========
+exp08-block5-optimized: 21/23任务
+exp09-block6-temp0.9: 21/23任务
+exp10-block6-nucleus0.95: 进行中
+exp11-block4: 进行中
+exp12-block6-c2.5: 进行中
+exp13-block6-width3: 进行中
+exp14-block6-init35: 进行中
+exp15-block6-n12: 进行中
+
+关键结论
+========
+1. **block_size=6 是最优选择**
+   - 比baseline(8)提升12.4%
+   - 提供了精细度和效率的最佳平衡
+
+2. **block_size影响最大**
+   - block=6: 11.44 (最佳)
+   - block=7: 11.23
+   - block=8: 10.18-10.45
+   - block=10: 7.61 (差)
+   - block=5: 5.90 (太小，失败率高)
+
+3. **MCTS参数影响较小**
+   - 增加搜索宽度有小幅提升
+   - c_param和width_factor影响不大
+
+4. **推荐配置**
+   - block_size: 6
+   - init_children: 20-25
+   - n_total_children: 10
+   - c_param: 2.1
+   - temperature: 1.0
+   - nucleus: 1.0
+
+最终最佳分数: 11.442557 (提升12.4%)
