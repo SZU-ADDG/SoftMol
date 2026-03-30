@@ -73,7 +73,7 @@ def _topk_stats(values: list[float], *, reverse: bool, ks: tuple[int, ...]) -> d
     return out
 
 
-def _load_rows(input_csv: Path) -> tuple[list[Row], dict[str, str], dict[str, int]]:
+def _load_rows(input_csv: Path, *, max_rows: int | None = None) -> tuple[list[Row], dict[str, str], dict[str, int]]:
     with input_csv.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         if not reader.fieldnames:
@@ -101,7 +101,9 @@ def _load_rows(input_csv: Path) -> tuple[list[Row], dict[str, str], dict[str, in
         n_raw = 0
         n_clean = 0
         rows: list[Row] = []
-        for row in reader:
+        for row_idx, row in enumerate(reader):
+            if max_rows is not None and row_idx >= max_rows:
+                break
             n_raw += 1
 
             smi = (row.get(smi_col) or "").strip()
@@ -184,7 +186,15 @@ def main() -> None:
         ),
         help="Output summary CSV path",
     )
+    parser.add_argument(
+        "--max-rows",
+        type=int,
+        default=None,
+        help="Limit each input CSV to first N rows before cleaning/dedup; default uses all rows",
+    )
     args = parser.parse_args()
+    if args.max_rows is not None and args.max_rows <= 0:
+        raise ValueError("--max-rows must be a positive integer")
 
     input_paths = [Path(p).expanduser().resolve() for p in args.inputs]
     output_summary = Path(args.output_summary).expanduser().resolve()
@@ -195,7 +205,7 @@ def main() -> None:
         if not input_csv.exists():
             raise FileNotFoundError(f"Input CSV not found: {input_csv}")
 
-        rows, col_info, count_info = _load_rows(input_csv)
+        rows, col_info, count_info = _load_rows(input_csv, max_rows=args.max_rows)
         dedup_rows = _dedup_keep_best_rv(rows)
 
         rv_values = [r.rv for r in dedup_rows]

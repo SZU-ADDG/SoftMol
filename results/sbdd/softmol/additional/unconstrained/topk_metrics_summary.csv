@@ -1,0 +1,2 @@
+input_csv,n_raw,n_clean,n_dedup,smi_col,rv_col,qed_source,sa_source,rv_top1,rv_top10_mean,rv_top100_mean,qed_top1,qed_top10_mean,qed_top100_mean,sa_top1,sa_top10_mean,sa_top100_mean
+/share/home/tm866079609100000/a875465180/yqw_bd3lms/SoftMol/mcts_output/beyond_affinity/SMILES-pt/5WFD/seed42/eval_merged.csv,1080,1080,1070,smi,rv,computed_by_tdc,computed_by_tdc,14.5,13.920000000000002,12.667000000000003,0.8690744035171175,0.8025854469555563,0.7041613119304039,2.141873256936581,2.347263035406167,2.730782975887481
