@@ -25,10 +25,13 @@ if 'utils' not in sys.modules and _utils_path.exists():
     sys.modules['utils'] = _mod
 
 from gated_mcts.utils.docking.docking_utils import DockingVina
+from gated_mcts.search_baselines import DockingBudgetWrapper
 from tokenizer import SmilesTokenizer
 from gated_mcts.mcts import MCTSConfig, MolecularProblemState, MCTS, BD3Sampler
 
 rdBase.DisableLog('rdApp.warning')
+
+_SEARCH_TIME_WHEN_BUDGET_ENABLED = 1_000_000_000
 
 
 def _write_trace_csv(trace_path: str, mcts_obj):
@@ -62,7 +65,14 @@ def Test(model, tokenizer, device, output_file_path, sample_num, output_file_nam
          trace_path: str | None = None):
     os.makedirs(output_file_path, exist_ok=True)
     t0 = time.time()
-    predictor = DockingVina(opt.protein)
+    max_oracle_calls = None if opt.max_oracle_calls is None else int(opt.max_oracle_calls)
+    if max_oracle_calls is not None and max_oracle_calls < 0:
+        raise ValueError('--max_oracle_calls must be >= 0')
+
+    # Keep default behavior when no oracle budget is provided.
+    predictor_default = DockingVina(opt.protein) if max_oracle_calls is None else None
+    effective_search_time = int(opt.search_time) if max_oracle_calls is None else _SEARCH_TIME_WHEN_BUDGET_ENABLED
+
     out_csv = os.path.join(output_file_path, output_file_name)
     with open(out_csv, 'w', encoding='utf-8') as f:
         f.write('rv,smi,cur_sentence,elapsed_time,seed\n')
@@ -73,6 +83,13 @@ def Test(model, tokenizer, device, output_file_path, sample_num, output_file_nam
     max_steps_blocks = int(opt.length) // max(1, int(opt.block_size))
     for i in range(sample_num):
         print('sample:', i+1)
+
+        # Per-sample budget reset: each sample gets an independent oracle budget.
+        if max_oracle_calls is None:
+            predictor = predictor_default
+        else:
+            predictor = DockingBudgetWrapper(opt.protein, max_oracle_calls=max_oracle_calls)
+
         initial_state = MolecularProblemState(
             model=model,
             tokenizer=tokenizer,
@@ -84,7 +101,7 @@ def Test(model, tokenizer, device, output_file_path, sample_num, output_file_nam
         )
         mcts_config = MCTSConfig(
             value_weight=float(opt.value_weight),
-            search_time=int(opt.search_time),
+            search_time=int(effective_search_time),
             min_terminals=int(opt.min_terminals),
             max_split_depth=int(opt.max_split_depth),
             init_children=int(opt.init_children),
@@ -195,7 +212,8 @@ if __name__ == '__main__':
 
     # MCTSConfig related
     parser.add_argument('--value_weight', type=float, default=0.0, help='Weight of value in total reward')
-    parser.add_argument('--search_time', type=int, default=1000, help='Total search rounds (approx upper limit of expansions)')
+    parser.add_argument('--search_time', type=int, default=1000, help='Total search rounds (approx upper limit of expansions). Kept as the default stopping control when --max_oracle_calls is not provided.')
+    parser.add_argument('--max_oracle_calls', type=int, default=None, help='Optional docking oracle budget (one docking = one call). When set, search stops by oracle budget and search_time is internally raised to a large upper bound.')
     parser.add_argument('--min_terminals', type=int, default=-1, help='Minimum terminal nodes to find')
     parser.add_argument('--max_split_depth', type=int, default=100, help='Max split depth (> this depth only single path expansion; -1 for unlimited)')
     parser.add_argument('--init_children', type=int, default=20, help='Initial children for root node; -1 to use n_total_children')

@@ -44,6 +44,7 @@ def parse_args():
     # MCTSConfig related
     parser.add_argument('--value_weight', type=float, default=0.0)
     parser.add_argument('--search_time', type=int, default=1000)
+    parser.add_argument('--max_oracle_calls', type=int, default=None, help='Optional docking oracle budget. If provided, run_mcts.py will stop by oracle calls instead of search_time.')
     parser.add_argument('--min_terminals', type=int, default=-1)
     parser.add_argument('--max_split_depth', type=int, default=100)
     parser.add_argument('--init_children', type=int, default=20)
@@ -109,6 +110,8 @@ def main():
         base_cmd.append('--disable_qed_sa_gate')
     if args.use_geam_score:
         base_cmd.append('--use_geam_score')
+    if args.max_oracle_calls is not None:
+        base_cmd += ['--max_oracle_calls', str(args.max_oracle_calls)]
 
     if args.trace_path is not None and len(str(args.trace_path)) > 0:
         base_cmd += [
