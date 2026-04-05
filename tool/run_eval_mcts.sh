@@ -7,7 +7,7 @@ usage() {
   cat <<'EOF'
 Usage: run_eval_mcts.sh [-d dir] [-p prefix] [-o output] [-t target] [-s tools_dir]
   -d 目录（默认 .）
-  -p CSV 文件名前缀（默认 mcts_job）
+  -p CSV 文件名前缀（默认 auto，可自动识别 mcts_job/greedy_job/beam_job）
   -o 合并后 CSV 输出路径（默认 <dir>/eval_merged.csv）
   -t 靶标蛋白名（parp1/fa7/5ht1b/braf/jak2，默认 braf）
   -s tools 目录（可选，需包含 merge_mcts.py / eval_mcts.py）
@@ -15,7 +15,7 @@ EOF
 }
 
 DIR="."
-PREFIX="mcts_job"
+PREFIX="auto"
 OUTPUT=""
 TARGET="braf"
 TOOLS_DIR=""
@@ -48,6 +48,8 @@ WORKSPACE_ROOT="$(cd "$REPO_ROOT/.." && pwd)"
 
 if [ -z "$TOOLS_DIR" ]; then
   CANDIDATES=(
+    "$SCRIPT_DIR"
+    "$REPO_ROOT/tool"
     "$REPO_ROOT/tools"
     "$WORKSPACE_ROOT/bd3lms-1.0/tools"
     "$WORKSPACE_ROOT/bd3lms-1.0-backup/tools"
